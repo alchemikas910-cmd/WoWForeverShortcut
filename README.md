@@ -4,7 +4,18 @@ A one-click desktop shortcut for **World of Warcraft: Forever**. It starts the g
 without the Battle.net launcher window getting in the way, and can sign you back in when Battle.net
 has logged you out.
 
+![One click on the shortcut: the password is filled in and the game starts](docs/demo.gif)
+
 Plain PowerShell scripts: you can read every line before you run it.
+
+## Why
+
+Battle.net has a habit of signing you out on its own: after an update, a restart, or for no
+visible reason at all. Then "just play a bit" turns into retyping your e-mail and password again.
+With auto sign-in, the shortcut does that for you and carries on to the game.
+
+And even when you are signed in and everything is fine, one click on the desktop is simply
+quicker than opening Battle.net, waiting for it to load, finding the game and pressing **Play**.
 
 ## Features
 
