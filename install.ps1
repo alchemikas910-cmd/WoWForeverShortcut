@@ -112,21 +112,40 @@ $pass.Size = New-Object Drawing.Size(294, 26)
 $form.Controls.Add($pass)
 
 $status = New-Object Windows.Forms.Label
-$status.Location = New-Object Drawing.Point(16, 244)
-$status.Size = New-Object Drawing.Size(428, 50)
+$status.Location = New-Object Drawing.Point(16, 240)
+$status.Size = New-Object Drawing.Size(428, 40)
 $form.Controls.Add($status)
+
+# Support: opened only when clicked - never by itself
+$kofiUrl = 'https://ko-fi.com/imyxjo'
+function Open-Kofi { Start-Process $kofiUrl }
+$thanks = New-Object Windows.Forms.LinkLabel
+$thanks.Text = 'If it helps, you can support it on Ko-fi.'
+$thanks.Location = New-Object Drawing.Point(16, 282)
+$thanks.Size = New-Object Drawing.Size(428, 22)
+$thanks.LinkArea = New-Object Windows.Forms.LinkArea(($thanks.Text.IndexOf('Ko-fi')), 5)
+$thanks.Visible = $false
+$thanks.Add_LinkClicked({ Open-Kofi })
+$form.Controls.Add($thanks)
 
 $install = New-Object Windows.Forms.Button
 $install.Text = 'Install'
 $install.Location = New-Object Drawing.Point(16, 308)
-$install.Size = New-Object Drawing.Size(150, 36)
+$install.Size = New-Object Drawing.Size(130, 36)
 $form.Controls.Add($install)
 
 $remove = New-Object Windows.Forms.Button
 $remove.Text = 'Remove'
-$remove.Location = New-Object Drawing.Point(176, 308)
-$remove.Size = New-Object Drawing.Size(120, 36)
+$remove.Location = New-Object Drawing.Point(154, 308)
+$remove.Size = New-Object Drawing.Size(110, 36)
 $form.Controls.Add($remove)
+
+$kofi = New-Object Windows.Forms.Button
+$kofi.Text = [string][char]0x2615 + ' Support on Ko-fi'
+$kofi.Location = New-Object Drawing.Point(272, 308)
+$kofi.Size = New-Object Drawing.Size(172, 36)
+$kofi.Add_Click({ Open-Kofi })
+$form.Controls.Add($kofi)
 
 $install.Add_Click({
     try {
@@ -152,6 +171,7 @@ $install.Add_Click({
         $pass.Text = ''
         $status.Text = 'Done: the "WoW Forever" shortcut is on the desktop.' + $(if ($sec) { ' Auto sign-in is on.' } else { ' No auto sign-in.' }) +
             $(if (-not $wow) { ' Game not found - the icon is Battle.net''s.' } else { '' })
+        $thanks.Visible = $true
     } catch {
         $status.Text = 'Error: ' + $_.Exception.Message
     }

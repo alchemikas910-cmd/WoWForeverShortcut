@@ -73,7 +73,10 @@ login or password).
 
 ## Support
 
-If this saves you some clicks every day, you can support the project here: **(donation link)**
+If this saves you some clicks every day, you can support the project on
+**[Ko-fi](https://ko-fi.com/imyxjo)** ☕
+
+[![Support me on Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/imyxjo)
 
 ## License
 
