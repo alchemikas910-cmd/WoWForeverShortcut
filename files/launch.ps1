@@ -142,10 +142,11 @@ public static class BnetWin {
 '@
 
 function Get-BnetPids { [uint32[]]@(Get-Process -Name 'Battle.net' | ForEach-Object { $_.Id }) }
-function Test-Wow { [bool](Get-Process -Name 'Wow') }
-# A game that was just closed keeps its process for a while with no window. Battle.net still counts it
-# as running and ignores the launch command, so such a game is waited out. "Closing": no window, and
-# started over a minute ago (a game that is still starting up has no window yet either).
+# A game that was just closed keeps its process for a while with no window. It is not the game we
+# are starting: those processes are noted at the start and never count as "the game runs".
+$script:closingPids = @()
+function Test-Wow { [bool](Get-Process -Name 'Wow' | Where-Object { $script:closingPids -notcontains $_.Id }) }
+# "Closing": no window, and started over a minute ago (a game still starting up has no window either)
 function Get-ClosingWow {
     @(Get-Process -Name 'Wow' | Where-Object {
         $age = 0
@@ -280,14 +281,9 @@ function Type-Login {
     }
 }
 
-if ((Get-ClosingWow).Count -gt 0) {
-    Write-Log 'the last game is still closing: waiting for it to exit'
-    $until = (Get-Date).AddMinutes(2)
-    while ((Get-Date) -lt $until -and (Get-ClosingWow).Count -gt 0) { Start-Sleep -Milliseconds 500 }
-    if ((Get-ClosingWow).Count -gt 0) { Write-Log 'the last game did not exit in 2 minutes'; exit }
-    Write-Log 'the last game has exited'
-    Start-Sleep -Seconds 3   # Battle.net notices that the game is gone
-}
+# the last game still closing does not hold the launch up: Play is pressed right away, as in Battle.net
+$script:closingPids = @(Get-ClosingWow | ForEach-Object { $_.Id })
+if ($script:closingPids.Count -gt 0) { Write-Log 'the last game is still closing: launching a new one anyway' }
 if (Test-Wow) { Write-Log 'game already running'; exit }
 
 if (-not (Get-Process -Name 'Battle.net')) {
