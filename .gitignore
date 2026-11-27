@@ -1,5 +1,6 @@
 # files the shortcut writes at run time - never commit them (login.dat holds a saved sign-in)
 launch.log
+launch.prev.log
 launch.pid
 login.dat
 config.txt

@@ -29,6 +29,8 @@ if (-not $owned) {
     if (-not $owned) { exit }
 }
 Set-Content -Path $pidFile -Value $PID
+# the previous run's log is kept next to it, for when the run that went wrong was not the last one
+if (Test-Path $log) { Copy-Item -Force $log (Join-Path $here 'launch.prev.log') }
 Set-Content -Encoding UTF8 -Path $log -Value ''
 
 $bnet = $null
@@ -141,6 +143,16 @@ public static class BnetWin {
 
 function Get-BnetPids { [uint32[]]@(Get-Process -Name 'Battle.net' | ForEach-Object { $_.Id }) }
 function Test-Wow { [bool](Get-Process -Name 'Wow') }
+# A game that was just closed keeps its process for a while with no window. Battle.net still counts it
+# as running and ignores the launch command, so such a game is waited out. "Closing": no window, and
+# started over a minute ago (a game that is still starting up has no window yet either).
+function Get-ClosingWow {
+    @(Get-Process -Name 'Wow' | Where-Object {
+        $age = 0
+        try { $age = ((Get-Date) - $_.StartTime).TotalSeconds } catch {}
+        $_.MainWindowHandle -eq [IntPtr]::Zero -and $age -gt 60
+    })
+}
 function Ask {
     Start-Process $bnet '--exec="launch WoWF"'
     Write-Log 'launch asked'
@@ -268,6 +280,14 @@ function Type-Login {
     }
 }
 
+if ((Get-ClosingWow).Count -gt 0) {
+    Write-Log 'the last game is still closing: waiting for it to exit'
+    $until = (Get-Date).AddMinutes(2)
+    while ((Get-Date) -lt $until -and (Get-ClosingWow).Count -gt 0) { Start-Sleep -Milliseconds 500 }
+    if ((Get-ClosingWow).Count -gt 0) { Write-Log 'the last game did not exit in 2 minutes'; exit }
+    Write-Log 'the last game has exited'
+    Start-Sleep -Seconds 3   # Battle.net notices that the game is gone
+}
 if (Test-Wow) { Write-Log 'game already running'; exit }
 
 if (-not (Get-Process -Name 'Battle.net')) {
